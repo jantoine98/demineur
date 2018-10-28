@@ -108,6 +108,7 @@ public class Grille
 	{
 		this.initialiserCases();
 		this.positionnerMines();
+		this.calculContenuCases();
 	}
 	
 	/**
@@ -149,6 +150,69 @@ public class Grille
 			
 			this.setContenuCase(x, y, "@");
 		}
+	}
+	
+	/**
+	 * cette fonction calcule le nombre de mines avoisinantes de chaque case de la grille
+	 */
+	private void calculContenuCases()
+	{
+		for(int i = 0; i < this.longueur; i++)
+		{
+			for(int j = 0; j < this.largeur; j++)
+			{
+				//on calcule le nombre de mines avoisinantes pour les cases qui ne contiennent pas de mines
+				if(this.getCase(i, j).getContenu() != "@")
+				{
+					int nbMines = this.getNbMinesAvoisinantes(i, j);
+					this.setContenuCase(i, j, nbMines+"");
+				}
+				
+			}
+		}
+	}
+	
+	/**
+	 * cette fonction calcule le nombre de mines avoisinantes d'une case de la grille
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private int getNbMinesAvoisinantes(int x, int y)
+	{
+		int xMin = x - 1, xMax = x + 1, yMin = y - 1, yMax = y + 1, nbMines = 0;
+		
+		//définir le xmin ymin xmax ymax pour traiter le cas des points qui sont sur les bords de la grille 
+		if(x == 0) 
+		{
+			xMin = 0;	
+		} 
+		if(x == this.longueur - 1)
+		{
+			xMax = this.longueur - 1;
+		}
+		
+		if(y == 0) 
+		{
+			yMin = 0;	
+		} 
+		if(y == this.largeur - 1)
+		{
+			yMax = this.largeur - 1;
+		}
+		
+		for(int i = xMin; i <= xMax; i++)
+		{
+			for(int j = yMin; j <= yMax; j++)
+			{
+				if(this.getCase(i, j).getContenu() == "@")
+				{
+					nbMines++;
+				}
+			}
+		}
+		
+		return nbMines;
 	}
 
 }
