@@ -83,8 +83,11 @@ public class Grille
 	
 	/**
 	 * afficher les cases d'une grille
+	 * @param devoile : si ce paramètre = true : afficher toutes les cases en mode dévoilé (utile pour mes tests)
+	 * si devoile = false : ne dévoiler que las cases qui sont au statut dévoilé
+	 * @return
 	 */
-	public String toString()
+	public String toString(boolean devoile)
 	{
 		String grilleString = "";
 		
@@ -92,7 +95,14 @@ public class Grille
 		{
 			for(int j = 0; j < this.largeur; j++)
 			{
-				grilleString += this.getCase(i, j).getContenu() + " ";
+				if(devoile == true || this.getCase(i, j).getDevoile())
+				{
+					grilleString += this.getCase(i, j).getContenu() + " ";
+				}
+				else
+				{
+					grilleString += "X ";
+				}
 			}
 			
 			grilleString += "\n";
@@ -205,6 +215,7 @@ public class Grille
 		{
 			for(int j = yMin; j <= yMax; j++)
 			{
+				//si la contenu est une mine : incrémznter le nb de mines
 				if(this.getCase(i, j).getContenu() == "@")
 				{
 					nbMines++;
@@ -214,5 +225,98 @@ public class Grille
 		
 		return nbMines;
 	}
+	
+	/**
+	 * fonction récursive qui dévoile le contenu d'une ou d'un ensemble de cases.
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public boolean devoilerCase(int x, int y)
+	{
+		//si la case passée en paramère est une mine : game over
+		if(this.getCase(x, y).getContenu() == "@")
+		{
+			return false;
+		}
+		//si la case passée en paramètre n'est pas une mine : 2 cas
+		else
+		{
+			int nbMinesAvoisinnantes = this.getNbMinesAvoisinantes(x, y);
+			
+			//1er cas : si las case a une mine avoisinnante : dévoiler juste la case en question
+			if(nbMinesAvoisinnantes != 0)
+			{
+				this.getCase(x, y).setDevoile(true);
+				return true;
+			}
+			
+			//2e cas : si la case n'a pas de mines avoisinnantes : 
+			else
+			{
+				//dévoiler la case en paramètre
+				this.getCase(x, y).setDevoile(true);
+				//récupérer ses case avoisinnantes
+				ArrayList<Case> cases = this.getCasesAvoisinnantes(x, y);
+				//pour chaque case avoisinnante qui n'est pas encore dévoilée : refaire le traitement du début récursivement
+				for(int i = 0; i < cases.size();i++)
+				{
+					Case caseAvoisinnante = cases.get(i);
+					this.devoilerCase(caseAvoisinnante.getX(), caseAvoisinnante.getY());
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * cette fonction permet de récupérer les cases avoisinnantes non dévoilées d'une case
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public ArrayList<Case> getCasesAvoisinnantes(int x,int y)
+	{
+		ArrayList<Case> cases = new ArrayList<Case>();
+		int xMin = x - 1, xMax = x + 1, yMin = y - 1, yMax = y + 1, nbMines = 0;
+		
+		//définir le xmin ymin xmax ymax pour traiter le cas des points qui sont sur les bords de la grille 
+		if(x == 0) 
+		{
+			xMin = 0;	
+		} 
+		if(x == this.longueur - 1)
+		{
+			xMax = this.longueur - 1;
+		}
+		
+		if(y == 0) 
+		{
+			yMin = 0;	
+		} 
+		if(y == this.largeur - 1)
+		{
+			yMax = this.largeur - 1;
+		}
 
+		for(int i = xMin; i <= xMax; i++)
+		{
+			for(int j = yMin; j <= yMax; j++)
+			{
+				//ne pas inclure la case passée en parmètre dans la liste des cases avoisinnantes
+				if(i == x && j == y)
+				{
+					continue;
+				}
+				//ne pas inclure les cases dévoilées dans la liste des cases avoisinnantes
+				if(this.getCase(i, j).getDevoile() == true)
+				{
+					continue;
+				}
+				cases.add(this.getCase(i, j));
+			}
+		}
+		return cases;
+	}
 }
